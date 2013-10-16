@@ -1,9 +1,9 @@
 
 import string, re, os, sys
 
-from fcc_utils import mipTableScan
+from fcc_utils import MipTableScan
 
-class reportSection:
+class ReportSection:
 
   def __init__(self,id,cls,parent=None, description=None):
     self.id = id
@@ -19,7 +19,7 @@ class reportSection:
 
   def addSubSection( self, id, cls, description=None):
     assert not self.closed, 'Attempt to add sub-section to closed report section'
-    self.subsections.append( reportSection(id, cls, parent=self, description=description )  )
+    self.subsections.append( ReportSection(id, cls, parent=self, description=description )  )
     self.auditDone = False
     return self.subsections[-1]
 
@@ -563,8 +563,8 @@ class checkGrids(checkBase):
 class mipVocab:
 
   def __init__(self):
-     ms = mipTableScan()
-     dir = '/home/martin/2013/mipML/FCC2/trunk/work/cordex_vocabs/mip/'
+     ms = MipTableScan()
+     dir = 'cordex_vocabs/mip/'
      self.varInfo = {}
      self.varcons = {}
      for f in ['fx','sem','mon','day','6h','3h']:
