@@ -1,8 +1,15 @@
 
+import sys
+
+## callout to summary.py: if this option is selected, imports of libraries are not needed.
+if __name__ == '__main__' and sys.argv[1] == '--sum':
+      import summary
+      summary.main()
+      raise SystemExit(0)
+
 # Standard library imports
 import os, string, time, logging, sys, glob, pkgutil
 import shutil
-
 ## pkgutil is used in file_utils
 # Third party imports
 
@@ -211,6 +218,10 @@ class c4_init:
        print
        raise SystemExit(0)
 
+    self.summarymode = args[0] == '--sum'
+    if self.summarymode:
+      return
+
     while len(args) > 0:
       next = args.pop(0)
       if next == '-f':
@@ -383,6 +394,7 @@ class main:
     logDict = {}
     ecount = 0
     c4i = c4_init(args=args)
+      
     isDummy  = c4i.project[:2] == '__'
     if (ncLib == dummy) and (not isDummy):
        print ncLib, c4i.project
@@ -518,6 +530,10 @@ def main_entry():
    main(printInfo=True)
 
 if __name__ == '__main__':
+  if sys.argv[1] == '--sum':
+      import summary
+      summary.main()
+      raise SystemExit(0)
   main_entry()
 
 
