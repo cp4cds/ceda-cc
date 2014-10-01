@@ -35,6 +35,9 @@ python summary.py <log file directory>
 
 This will produce a listing of errors, the number of times they occur and up to two of the files which contain the error. It is hoped that inspection of one or 2 files will provide enough information to trace the problems which lead to the error reports.
 
+python summary.py -html <log file directory>
+
+This will create a set of html files in the "html" directory, which can be viewed through a browser (enter file://<path to html directory into your browser).
 
 Installing as a package:
 ------------------------
@@ -104,7 +107,7 @@ Vocabulary lists GCMModelName.txt and RCMModelName.txt are held on the DMI CORDE
   http://cordex.dmi.dk/joomla/images/CORDEX/RCMModelName.txt
 
 To update the CMOR tables use: 
-"git clone git://uv-cdat.llnl.gov/gitweb/cordex-cmor-tables.git"
+"git clone https://github.com/PCMDI/cordex-cmor-tables"
 
 VIRTUAL MODE
 ------------

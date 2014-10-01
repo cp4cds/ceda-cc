@@ -1,12 +1,16 @@
 import string, os, re, stat, sys
+from config_c4 import CC_CONFIG_DIR
 
 ncdumpCmd = 'ncdump'
 ncdumpCmd = '/usr/local/5/bin/ncdump'
 ##
 
-class mipTableScan:
+from xceptions import *
+
+class mipTableScan(object):
 
   def __init__(self, vats = ['standard_name','long_name','units','cell_methods'] ):
+    self.al = []
     self.vats = vats
     self.re_cmor_mip2 = re.compile( 'dimensions:(?P<dims>.*?):::' )
     self.re_vats = { }
@@ -32,6 +36,7 @@ class mipTableScan:
       sll[-1][1].append(l)
 
     eee = []
+    nal = []
     for s in sll:
       if s[0] == 'variable_entry':
          bits = string.split(s[1][0],':')
@@ -47,6 +52,7 @@ class mipTableScan:
              ds = string.split(v)
            else:
              aa[k] = v
+             nal.append(k)
          if self.project == 'CMIP5':
            if var == 'tos':
              if aa['standard_name'] != 'sea_surface_temperature':
@@ -58,6 +64,14 @@ class mipTableScan:
                aa['long_name'] = 'Surface Air Pressure'
          eee.append( (var,ds,aa,tag) )
 
+
+    nal.sort()
+    nalu = [nal[0],]
+    for a in nal[1:]:
+      if a != nalu[-1]:
+        nalu.append(a)
+        if a not in self.al:
+          self.al.append( a )
 
     checkOldMethod = False
     if checkOldMethod:
@@ -85,7 +99,7 @@ class mipTableScan:
           if log != None:
              log.warn(  'Mistake?? in scan_table %s' % str(mm) )
           ds = mm
-          raise 'Mistake?? in scan_table %s' % str(mm)
+          raise baseException( 'Mistake?? in scan_table %s' % str(mm) )
         ee.append( (var,ds,aa,tag) )
 
       for k in range(len(ee) ):
@@ -98,8 +112,9 @@ class mipTableScan:
       return tuple( eee )
     else:
       ff = {}
+## l[0] = var name, l[1] = dimensions, l[2] = attributes, l[3] = tag
       for l in eee:
-        ff[l[0]] = ( l[1], l[2], l[3] )
+        ff[l[0]] = ( l[1], l[2], l[3], tag )
       if appendTo != None:
         for k in ff.keys():
           assert ff[k][1].has_key( 'standard_name' ), 'No standard name in %s:: %s' % (k,str(ff[k][1].keys()))
@@ -107,10 +122,25 @@ class mipTableScan:
             if lax:
               if ff[k][1]['standard_name'] != appendTo[k][1]['standard_name']:
                 if warn:
-                  print 'ERROR[X1]%s: Inconsistent standard_names %s:: %s [%s] --- %s [%s]' % (tag,k,ff[k][1],ff[k][2], appendTo[k][1], appendTo[k][2])
+                  print 'ERROR[X1]%s - %s : Inconsistent standard_names %s:: %s [%s] --- %s [%s]' % (tag,appendTo[k][3],k,ff[k][1],ff[k][2], appendTo[k][1], appendTo[k][2])
               if ff[k][1]['long_name'] != appendTo[k][1]['long_name']:
                 if warn:
-                  print 'WARNING[X1]%s: Inconsistent long_names %s:: %s --- %s' % (tag,k,ff[k][1]['long_name'],appendTo[k][1]['long_name'])
+                  print 'WARNING[X1]%s -- %s: Inconsistent long_names %s:: %s --- %s' % (tag,appendTo[k][3],k,ff[k][1]['long_name'],appendTo[k][1]['long_name'])
+
+              p1 = ff[k][1].get('positive','not set')
+              p2 = appendTo[k][1].get('positive','not set')
+              if p1 != p2:
+                if warn:
+                  print 'WARNING[X1]%s -- %s: Inconsistent positive attributes %s:: %s --- %s' % (tag,appendTo[k][3],k,p1,p2)
+
+              for k2 in ff[k][1].keys():
+                if k2 not in ['standard_name','long_name','positive']:
+                    p1 = ff[k][1].get(k2,'not set')
+                    p2 = appendTo[k][1].get(k2,'not set')
+                    if p1 != p2:
+                      if warn:
+                        print 'WARNING[Y1]%s -- %s: Inconsistent %s attributes %s:: %s --- %s' % (tag,appendTo[k][3],k2,k,p1,p2)
+
             if not lax:
               assert ff[k][1] == appendTo[k][1], 'Inconsistent entry definitions %s:: %s [%s] --- %s [%s]' % (k,ff[k][1],ff[k][2], appendTo[k][1], appendTo[k][2])
           else:
@@ -118,3 +148,60 @@ class mipTableScan:
         return appendTo
       else:
         return ff
+
+
+class snlist:
+
+  def __init__(self,dir=None,tab='cf-standard-name-table.xml' ):
+    if dir  == None:
+      dir = os.path.join(CC_CONFIG_DIR, 'cf/')
+    self.re_sn = re.compile( 'entry id="(.*)"' )
+    self.re_sna = re.compile( 'alias id="(.*)"' )
+    self.dir = dir
+    self.tab = tab
+
+##alias id="atmosphere_water_vapor_content"
+##entry id="age_of_sea_ice"'
+
+  def gen_sn_list(self ):
+    pathn = self.dir + self.tab
+    assert os.path.isfile( pathn ), '%s not found ' % pathn
+    snl = []
+    snla = []
+    for l in open(pathn).readlines():
+      m = self.re_sn.findall(l )
+      if len(m) > 0:
+        for i in m:
+          snl.append( i )
+      m = self.re_sna.findall(l )
+      if len(m) > 0:
+        for i in m:
+          snla.append( i )
+    return (snl,snla)
+
+class tupsort:
+   def __init__(self,k=0):
+     self.k = k
+   def cmp(self,x,y):
+     return cmp( x[self.k], y[self.k] )
+
+class tupsort2:
+   def __init__(self,k0,k1):
+     self.k0 = k0
+     self.k1 = k1
+   def cmp(self,x,y):
+     if x[self.k0] == y[self.k0]:
+       return cmp( x[self.k1], y[self.k1] )
+     return cmp( x[self.k0], y[self.k0] )
+
+class tupsort3:
+   def __init__(self,k0,k1,k2):
+     self.k0 = k0
+     self.k1 = k1
+     self.k2 = k2
+   def cmp(self,x,y):
+     if x[self.k0] == y[self.k0]:
+       if x[self.k1] == y[self.k1]:
+         return cmp( x[self.k2], y[self.k2] )
+       return cmp( x[self.k1], y[self.k1] )
+     return cmp( x[self.k0], y[self.k0] )

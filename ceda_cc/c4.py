@@ -1,8 +1,15 @@
 
+import sys
+
+## callout to summary.py: if this option is selected, imports of libraries are not needed.
+if __name__ == '__main__' and sys.argv[1] == '--sum':
+      import summary
+      summary.main()
+      raise SystemExit(0)
+
 # Standard library imports
 import os, string, time, logging, sys, glob, pkgutil
 import shutil
-
 ## pkgutil is used in file_utils
 # Third party imports
 
@@ -19,20 +26,28 @@ import config_c4 as config
 
 reload( utils )
 
+from xceptions import baseException
+
+from fcc_utils2 import tupsort
+
 
 #driving_model_ensemble_member = <CMIP5Ensemble_member>
 #rcm_version_id = <RCMVersionID>                     
 
-class dummy:
+class dummy(object):
    pass
 
 pathTmplDict = { 'CORDEX':'%(project)s/%(product)s/%(domain)s/%(institute)s/%(driving_model)s/%(experiment)s/%(ensemble)s/%(model)s/%(model_version)s/%(frequency)s/%(variable)s/files/%%(version)s/',   \
-                 'SPECS':'%(project)s/%(product)s/%(institute)s/%(model)s/%(experiment)s_%(series)s/%(start_date)s/%(frequency)s/%(realm)s/%(variable)s/%(ensemble)s/files/%%(version)s/', \
+                 'SPECS':'%(project)s/%(product)s/%(institute)s/%(model)s/%(experiment)s/%(start_date)s/%(frequency)s/%(realm)s/%(table)s/%(variable)s/%(ensemble)s/files/%%(version)s/', \
                  'CMIP5':'%(project)s/%(product)s/%(institute)s/%(model)s/%(experiment)s/%(frequency)s/%(realm)s/%(table)s/%(ensemble)s/files/%%(version)s/%(variable)s/', \
                  '__def__':'%(project)s/%(product)s/%(institute)s/%(model)s/%(experiment)s/%(frequency)s/%(realm)s/%(variable)s/%(ensemble)s/files/%%(version)s/', \
                }
 
-class recorder:
+## Core DRS: list of vocab names
+## Path template: -- current version puts upper case in "project"
+## Dataset template:  
+
+class recorder(object):
 
   def __init__(self,project,fileName,type='map',dummy=False):
     self.dummy = dummy
@@ -41,6 +56,7 @@ class recorder:
     self.pathTmpl = '%(project)s/%(product)s/%(domain)s/%(institute)s/%(driving_model)s/%(experiment)s/%(ensemble)s/%(model)s/%(model_version)s/%(frequency)s/%(variable)s/files/%%(version)s/'
     self.pathTmpl = pathTmplDict.get(project,pathTmplDict['__def__'])
     self.records = {}
+    self.tidtupl = []
 
   def open(self):
     if self.type == 'map':
@@ -66,11 +82,13 @@ class recorder:
       fdate = "na"
       sz = 0
     record = '%s | OK | %s | modTime = %s | target = %s ' % (fpath,sz,fdate,tpath)
+    fn = string.split( fpath, '/' )[-1]
     for k in ['creation_date','tracking_id']:
       if k in drs.keys():
         record += ' | %s = %s' % (k,drs[k])
+        if k == 'tracking_id':
+          self.tidtupl.append( (fn,drs[k]) )
 
-    fn = string.split( fpath, '/' )[-1]
     self.records[fn] = record
   
   def modify(self,fn,msg):
@@ -81,6 +99,27 @@ class recorder:
     s = string.replace( self.records[fn], '| OK |', '| %s |' % msg )
     ##print '--> ',s
     self.records[fn] = s
+
+  def checktids(self):
+## sort by tracking id
+    if len( self.tidtupl ) == 1:
+      return
+    self.tidtupl.sort( cmp=tupsort(k=1).cmp )
+    nd = 0
+    fnl = []
+    for k in range(len(self.tidtupl)-1):
+      if self.tidtupl[k][1] == self.tidtupl[k+1][1]:
+        print 'Duplicate tracking_id: %s, %s:: %s' % (self.tidtupl[k][0],self.tidtupl[k+1][0],self.tidtupl[k][1])
+        nd += 1
+        if len(fnl) == 0 or fnl[-1] != self.tidtupl[k][0]:
+          fnl.append( self.tidtupl[k][0])
+        fnl.append( self.tidtupl[k+1][0])
+    if nd == 0:
+      print 'No duplicate tracking ids found in %s files' % len(self.tidtupl)
+    else:
+      print '%s duplicate tracking ids' % nd
+      for f in fnl:
+        self.modify( f, 'ERROR: duplicate tid' )
 
   def dumpAll(self,safe=True):
     keys = self.records.keys()
@@ -100,7 +139,7 @@ class recorder:
     fn = string.split( fpath, '/' )[-1]
     self.records[fn] = record
 
-class checker:
+class checker(object):
   def __init__(self, pcfg, cls,reader,abortMessageCount=-1):
     self.info = dummy()
     self.info.pcfg = pcfg
@@ -182,7 +221,7 @@ class checker:
     self.drs['project'] = self.info.pcfg.project
     self.errorCount = self.cfn.errorCount + self.cga.errorCount + self.cgd.errorCount + self.cgg.errorCount
 
-class c4_init:
+class c4_init(object):
 
   def __init__(self,args=None):
     self.logByFile = True
@@ -201,21 +240,36 @@ class c4_init:
     self.project = "CORDEX"
     self.holdExceptions = False
     forceLogOrg = None
+    argsIn = args[:]
 
     # The --copy-config option must be the first argument if it is present.
     if args[0] == '--copy-config':
+       if len(args) < 2:
+         self.commandHints( argsIn )
        args.pop(0)
        dest_dir = args.pop(0)
        config.copy_config(dest_dir)
        print 'Configuration directory copied to %s.  Set CC_CONFIG_DIR to use this configuration.' % dest_dir
        print
        raise SystemExit(0)
+    elif args[0] == '-h':
+       print 'Help command not implemented yet'
+       raise SystemExit(0)
 
+    self.summarymode = args[0] == '--sum'
+    if self.summarymode:
+      return
+
+    self.forceNetcdfLib = None
+    fltype = None
+    argu = []
     while len(args) > 0:
       next = args.pop(0)
       if next == '-f':
         flist = [args.pop(0),]
         self.logByFile = False
+        fltype = '-f'
+        self.source = flist[0]
       elif next == '--log':
         x = args.pop(0)
         assert x in ['single','multi','s','m'], 'unrecognised logging option (--log): %s' % (x)
@@ -223,6 +277,14 @@ class c4_init:
            forceLogOrg = 'multi'
         elif x in ['single','s']:
            forceLogOrg = 'single'
+      elif next == '--force-ncq':
+        self.forceNetcdfLib = 'ncq3'
+      elif next == '--force-cdms2':
+        self.forceNetcdfLib = 'cdms2'
+      elif next == '--force-pync4':
+        self.forceNetcdfLib = 'netCDF4'
+      elif next == '--force-scientific':
+        self.forceNetcdfLib = 'Scientific'
       elif next == '--flfmode':
         lfmk = args.pop(0)
         assert lfmk in ['a','n','np','w','wo'], 'Unrecognised file logfile mode (--flfmode): %s' % lfmk
@@ -234,6 +296,7 @@ class c4_init:
       elif next == '-d':
         fdir = args.pop(0)
         flist = glob.glob( '%s/*.nc' % fdir  )
+        self.source = '%s/*.nc' % fdir
       elif next == '-D':
         flist  = []
         fdir = args.pop(0)
@@ -242,6 +305,7 @@ class c4_init:
             fpath = '%s/%s' % (root,f)
             if (os.path.isfile( fpath ) or os.path.islink( fpath )) and f[-3:] == '.nc':
               flist.append( fpath )
+        self.source = '%s/.....' % fdir
       elif next == '-R':
         self.recordFile = args.pop(0)
       elif next == '--ld':
@@ -255,10 +319,13 @@ class c4_init:
         self.project = args.pop(0)
       else:
        print 'Unused argument: %s' % next
+       argu.append( next )
        nn+=1
-    assert nn==0, 'Aborting because of unused arguments'
+    if nn != 0:
+      print 'Unused arguments: ', argu
+      self.commandHints( argsIn )
 
-    if self.project == 'CMIP5':
+    if self.project == 'CMIP5' and fltype != '-f':
       fl0 = []
       for f in flist:
         if string.find( f, '/latest/' ) != -1:
@@ -335,6 +402,22 @@ class c4_init:
           self.attributeMappings.append( ('am001',cl, string.split(bb[1],'=') ) )
       self.attributeMappingsLog = open( 'attributeMappingsLog.txt', 'w' )
 
+  def commandHints(self, args):
+    if args[0] in ['-h','--sum']:
+      print 'Arguments look OK'
+    elif args[0] == '--copy-config':
+      print 'Usage [configuration copy]: ceda_cc --copy-config <target directory path>'
+    else:
+      if not( '-f' in args or '-d' in args or '-D' in args):
+        print 'No file or target directory specified'
+        print """USAGE:
+ceda_cc -p <project> [-f <NetCDF file>|-d <directory containing files>|-D <root of directory tree>] [other options]
+
+With the "-D" option, all files in the directory tree beneath the given diretory will be checked. With the "-d" option, only files in the given directory will be checked.
+"""
+    raise SystemExit(0)
+   
+
   def getFileLog( self, fn, flf=None ):
     if flf == None:
       tstring2 = '%4.4i%2.2i%2.2i' % time.gmtime()[0:3]
@@ -377,19 +460,18 @@ class c4_init:
       os.popen( 'chmod %s %s;' % (444, self.batchLogfile) )
 
 
-class main:
+class main(object):
 
   def __init__(self,args=None,abortMessageCount=-1,printInfo=False,monitorFileHandles = False):
     logDict = {}
     ecount = 0
     c4i = c4_init(args=args)
+      
     isDummy  = c4i.project[:2] == '__'
-    if (ncLib == dummy) and (not isDummy):
-       print ncLib, c4i.project
-       print 'Cannot proceed with non-dummy project without cdms'
-       raise
+    if (ncLib == None) and (not isDummy):
+       raise baseException( 'Cannot proceed with non-dummy [%s] project without a netcdf API' % (c4i.project) )
     pcfg = config.projectConfig( c4i.project )
-    ncReader = fileMetadata(dummy=isDummy, attributeMappingsLog=c4i.attributeMappingsLog)
+    ncReader = fileMetadata(dummy=isDummy, attributeMappingsLog=c4i.attributeMappingsLog,forceLib=c4i.forceNetcdfLib)
     self.cc = checker(pcfg, c4i.project, ncReader,abortMessageCount=abortMessageCount)
     rec = recorder( c4i.project, c4i.recordFile, dummy=isDummy )
     if monitorFileHandles:
@@ -399,6 +481,7 @@ class main:
 
     cal = None
     c4i.logger.info( 'Starting batch -- number of file: %s' % (len(c4i.flist)) )
+    c4i.logger.info( 'Source: %s' % c4i.source )
     if len( c4i.errs ) > 0:
       for i in range(0,len( c4i.errs ), 2 ):
         c4i.logger.info( c4i.errs[i] )
@@ -411,7 +494,11 @@ class main:
 
     fileLogOpen = False
     self.resList =  []
+    stdoutsum = 2000
+    npass = 0
+    kf = 0
     for f in c4i.flist:
+      kf += 1
       rv = False
       ec = None
       if monitorFileHandles:
@@ -444,6 +531,8 @@ class main:
           cal = self.cc.calendar
           ec = self.cc.errorCount
         rv =  ec == 0
+        if rv:
+          npass += 1
         self.resList.append( (rv,ec) )
 
         if c4i.logByFile:
@@ -468,12 +557,14 @@ class main:
       except:
         c4i.logger.error("Exception has occured" ,exc_info=1)
         if fileLogOpen:
-          fLogger.error("xxxxxx: FAILED:: Exception has occured" ,exc_info=1)
+          fLogger.error("C4.100.001: [exception]: FAILED:: Exception has occured" ,exc_info=1)
           c4i.closeFileLog( )
           fileLogOpen = False
         rec.addErr( f, 'ERROR: Exception' )
         if not c4i.holdExceptions:
           raise
+      if stdoutsum > 0 and kf%stdoutsum == 0:
+         print '%s files checked; %s passed this round' % (kf,npass)
       if monitorFileHandles:
         nofhEnd = self.monitor.get_open_fds()
         if nofhEnd > nofhStart:
@@ -499,6 +590,8 @@ class main:
         if ll[i] != ll[i-1]:
           oo.write( ll[i] + '\n' )
       oo.close()
+    if c4i.project in ['SPECS','CCMI','CMIP5']:
+      rec.checktids()
     rec.dumpAll()
     if printInfo:
       print 'Error count %s' % ecount
@@ -518,6 +611,10 @@ def main_entry():
    main(printInfo=True)
 
 if __name__ == '__main__':
+  if sys.argv[1] == '--sum':
+      import summary
+      summary.main()
+      raise SystemExit(0)
   main_entry()
 
 

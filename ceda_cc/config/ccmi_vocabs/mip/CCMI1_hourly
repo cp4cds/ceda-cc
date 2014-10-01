@@ -1,68 +1,46 @@
-table_id: Table 6hrLev
+cmor_version: 2.5.0    ! minimum version of CMOR that can read this table
+cf_version:   1.4      ! version of CF that output conforms to
+project_id:   CCMI1    ! project id
+table_id:     hourly   ! table id
+table_date:   6 August 2014 ! date this table was constructed
 modeling_realm: atmos
+frequency: hr
 
-frequency: 6hr
+expt_id_ok:  'Hindcast' 'refC1'
+expt_id_ok:  'Hindcast - Specified Dynamics' 'refC1SD'
+expt_id_ok:  'Projection' 'refC2'
+expt_id_ok:  'Hindcast Scenario - altEmis' 'senC1Emis'
+expt_id_ok:  'HindcastSD Scenario - altEmis' 'senC1SDEmis'
+expt_id_ok:  'Hindcast Scenario - fxdEmis' 'senC1fEmis'
+expt_id_ok:  'HindcastSD Scenario - fxdEmis' 'senC1SDfEmis'
+expt_id_ok:  'Hindcast Scenario - altSSI' 'senC1SSI'
+expt_id_ok:  'Projection Scenario - RCP2.6' 'senC2rcp26'
+expt_id_ok:  'Projection Scenario - RCP4.5' 'senC2rcp45'
+expt_id_ok:  'Projection Scenario - RCP8.5' 'senC2rcp85'
+expt_id_ok:  'Projection Scenario - fxdODS' 'senC2fODS'
+expt_id_ok:  'Projection Scenario - fxdODS2000' 'senC2fODS2000'
+expt_id_ok:  'Projection Scenario - fxdGHG' 'senC2fGHG'
+expt_id_ok:  'Projection Scenario - fxdEmis' 'senC2fEmis'
+expt_id_ok:  'Projection Scenario - GeoMIP-G1' 'senC2GeoMIPG1'
+expt_id_ok:  'Projection Scenario - GeoMIP-G2' 'senC2GeoMIPG2'
+expt_id_ok:  'Projection Scenario - GeoMIP-G3' 'senC2GeoMIPG3'
+expt_id_ok:  'Projection Scenario - GeoMIP-G4' 'senC2GeoMIPG4'
+expt_id_ok:  'Projection Scenario - SolarTrend' 'senC2SlrTrend'
 
-cmor_version: 2.6 ! minimum version of CMOR that can read this table
-cf_version:   1.4         ! version of CF that output conforms to
-project_id:   CMIP5  ! project id
-table_date:   17 July 2013 ! date this table was constructed
+approx_interval:  0.042   ! approximate spacing between successive time
+                          !   samples (in units of the output time 
+                          !   coordinate)
 
 missing_value: 1.e20      ! value used to indicate a missing value
                           !   in arrays output by netCDF as 32-bit IEEE 
                           !   floating-point numbers (float or real)
 
-baseURL: http://cmip-pcmdi.llnl.gov/CMIP5/dataLocation 
+baseURL: http://www.met.reading.ac.uk/ccmi/   
 product: output
 
 required_global_attributes: creation_date tracking_id forcing model_id parent_experiment_id parent_experiment_rip branch_time contact institute_id ! space separated required global attribute 
 
-forcings:   N/A Nat Ant GHG SD SI SA TO SO Oz LU Sl Vl SS Ds BC MD OC AA
-
-expt_id_ok: '10- or 30-year run initialized in year XXXX' 'decadalXXXX'
-expt_id_ok: 'volcano-free hindcast initialized in year XXXX' 'noVolcXXXX'
-expt_id_ok: 'prediction with 2010 volcano' 'volcIn2010'
-expt_id_ok: 'pre-industrial control' 'piControl'
-expt_id_ok: 'historical' 'historical'
-expt_id_ok: 'historical extension' 'historicalExt'
-expt_id_ok: 'other historical forcing' 'historicalMisc'
-expt_id_ok: 'mid-Holocene' 'midHolocene'
-expt_id_ok: 'last glacial maximum' 'lgm'
-expt_id_ok: 'last millennium' 'past1000'
-expt_id_ok: 'RCP4.5' 'rcp45'
-expt_id_ok: 'RCP8.5' 'rcp85'
-expt_id_ok: 'RCP2.6' 'rcp26'
-expt_id_ok: 'RCP6' 'rcp60'
-expt_id_ok: 'ESM pre-industrial control' 'esmControl'
-expt_id_ok: 'ESM historical' 'esmHistorical'
-expt_id_ok: 'ESM RCP8.5' 'esmrcp85'
-expt_id_ok: 'ESM fixed climate 1' 'esmFixClim1'
-expt_id_ok: 'ESM fixed climate 2' 'esmFixClim2'
-expt_id_ok: 'ESM feedback 1' 'esmFdbk1'
-expt_id_ok: 'ESM feedback 2' 'esmFdbk2'
-expt_id_ok: '1 percent per year CO2' '1pctCO2'
-expt_id_ok: 'abrupt 4XCO2' 'abrupt4xCO2'
-expt_id_ok: 'natural-only' 'historicalNat'
-expt_id_ok: 'GHG-only' 'historicalGHG'
-expt_id_ok: 'AMIP' 'amip'
-expt_id_ok: '2030 time-slice' 'sst2030'
-expt_id_ok: 'control SST climatology' 'sstClim'
-expt_id_ok: 'CO2 forcing' 'sstClim4xCO2'
-expt_id_ok: 'all aerosol forcing' 'sstClimAerosol'
-expt_id_ok: 'sulfate aerosol forcing' 'sstClimSulfate'
-expt_id_ok: '4xCO2 AMIP' 'amip4xCO2'
-expt_id_ok: 'AMIP plus patterned anomaly' 'amipFuture'
-expt_id_ok: 'aqua planet control' 'aquaControl'
-expt_id_ok: '4xCO2 aqua planet' 'aqua4xCO2'
-expt_id_ok: 'aqua planet plus 4K anomaly' 'aqua4K'
-expt_id_ok: 'AMIP plus 4K anomaly' 'amip4K'
-
-
-approx_interval:  0.250000     ! approximate spacing between successive time
-                          !   samples (in units of the output time 
-                          !   coordinate.
-
-generic_levels:   alevel
+generic_levels:   alevel alev1
 
 !============
 axis_entry: longitude
@@ -109,6 +87,71 @@ must_have_bounds: yes
 !----------------------------------
 !
 
+!============
+axis_entry: plevs
+!============
+!----------------------------------
+! Axis attributes:
+!----------------------------------
+standard_name:    air_pressure
+units:            Pa
+axis:             Z             ! X, Y, Z, T (default: undeclared)
+positive:         down         ! up or down (default: undeclared)
+long_name:        pressure
+!----------------------------------
+! Additional axis information:
+!----------------------------------
+out_name:         plev
+stored_direction: decreasing
+tolerance:        0.001
+type:             double
+requested:        100000. 85000. 70000. 50000. 40000. 30000. 25000. 20000. 17000. 15000. 13000. 11500. 10000. 9000. 8000. 7000. 5000. 3000. 2000. 1500. 1000. 700. 500. 300. 200. 150. 100. 50. 30. 20. 10.       ! space-separated list of requested coordinates 
+must_have_bounds: no
+!----------------------------------
+!
+
+!============
+axis_entry: pr100
+!============
+!----------------------------------
+! Axis attributes:
+!----------------------------------
+standard_name:    air_pressure
+units:            Pa
+axis:             Z             ! X, Y, Z, T (default: undeclared)
+positive:         down         ! up or down (default: undeclared)
+long_name:        pressure
+!----------------------------------
+! Additional axis information:
+!----------------------------------
+out_name:         plev
+stored_direction: decreasing
+tolerance:        0.001
+type:             double
+value:            10000.            ! of scalar (singleton) dimension 
+must_have_bounds: no
+!----------------------------------
+!
+
+!============
+axis_entry: time
+!============
+!----------------------------------
+! Axis attributes:
+!----------------------------------
+standard_name:    time
+units:            days since ?
+axis:             T             ! X, Y, Z, T (default: undeclared)
+long_name:        time
+!----------------------------------
+! Additional axis information:
+!----------------------------------
+out_name:         time
+stored_direction: increasing
+type:             double
+must_have_bounds: yes
+!----------------------------------
+!
 
 !============
 axis_entry: time1
@@ -157,7 +200,7 @@ must_have_bounds: yes
 stored_direction: increasing
 valid_min:        -200.
 valid_max:        800000.
-formula:          z = a*ztop + b1*zsurf1 + b2*zsurf2
+formula:          z(n,k,j,i) = a(k)*ztop + b1(k)*zsurf1(n,j,i) + b2(k)*zsurf2(n,j,i)
 z_factors:        a: a b1: b1 b2: b2 ztop: ztop zsurf1: zsurf1 zsurf2: zsurf2
 z_bounds_factors: a: a_bnds b1: b1_bnds b2: b2_bnds ztop: ztop zsurf1: zsurf1 zsurf2: zsurf2
 !----------------------------------	
@@ -187,7 +230,7 @@ must_have_bounds: yes
 stored_direction: decreasing
 valid_min:        -1.
 valid_max:        20.
-formula:          p = p0 * exp(-lev)
+formula:          p(k) = p0 * exp(-lev(k))
 z_factors:        p0: p0 lev: lev
 z_bounds_factors: p0: p0 lev: lev_bnds
 !----------------------------------	
@@ -217,7 +260,7 @@ must_have_bounds: yes
 stored_direction: decreasing
 valid_min:        0.0
 valid_max:        1.0
-formula:          p = ptop + sigma*(ps - ptop)
+formula:          p(n,k,j,i) = ptop + sigma(k)*(ps(n,j,i) - ptop)
 z_factors:        ptop: ptop sigma: lev ps: ps
 z_bounds_factors: ptop: ptop sigma: lev_bnds ps: ps
 !----------------------------------	
@@ -228,7 +271,7 @@ axis_entry:  standard_hybrid_sigma
 !============
 !
 ! This coordinate is dimensionless and varies from a small value at the model top to 1.0 at the surface.
-!  The values of a+ b, which appear in the formula below, should be stored as standard_hybrid_sigma.  
+!  The values of a(k)+ b(k), which appear in the formula below, should be stored as standard_hybrid_sigma.  
 !  Note that in the netCDF file the variable will be named "lev", not standard_hybrid_sigma.
 !
 !---------------------------------
@@ -247,7 +290,7 @@ must_have_bounds: yes
 stored_direction: decreasing
 valid_min:        0.0
 valid_max:        1.0
-formula:          p = a*p0 + b*ps
+formula:          p(n,k,j,i) = a(k)*p0 + b(k)*ps(n,j,i)
 z_factors:        p0: p0 a: a b: b ps: ps
 z_bounds_factors: p0: p0 a: a_bnds b: b_bnds ps: ps
 !----------------------------------		
@@ -258,7 +301,7 @@ axis_entry:  alternate_hybrid_sigma
 !============
 !
 ! This coordinate is dimensionless and varies from a small value at the model top to 1.0 at the surface.
-!  The values of ap/p0 + b, which appear in the formula below, should be stored as alternate_hybrid_sigma.  
+!  The values of ap(k)/p0 + b(k), which appear in the formula below, should be stored as alternate_hybrid_sigma.  
 !  Note that in the netCDF file the variable will be named "lev", not alternate_hybrid_sigma.
 !
 !------------
@@ -279,7 +322,7 @@ must_have_bounds: yes
 stored_direction: decreasing
 valid_min:        0.0
 valid_max:        1.0
-formula:          p = ap + b*ps
+formula:          p(n,k,j,i) = ap(k) + b(k)*ps(n,j,i)
 z_factors:        ap: ap b: b ps: ps
 z_bounds_factors: ap: ap_bnds b: b_bnds ps: ps
 !----------------------------------		
@@ -290,7 +333,7 @@ axis_entry:  hybrid_height
 !============
 !
 ! This coordinate has dimension of meters (m) and increases upward.
-!  The values of a which appear in the formula below, should be stored as hybrid_height.  
+!  The values of a(k) which appear in the formula below, should be stored as hybrid_height.  
 !  Note that in the netCDF file the variable will be named "lev", not hybrid_height.
 !
 !------------
@@ -310,7 +353,7 @@ out_name:         lev
 must_have_bounds: yes
 stored_direction: increasing
 valid_min:        0.0
-formula:          z = a + b*orog
+formula:          z(k,j,i) = a(k) + b(k)*orog(j,i)
 z_factors:        a: lev b: b orog: orog
 z_bounds_factors: a: lev_bnds b: b_bnds orog: orog
 !----------------------------------		
@@ -378,6 +421,7 @@ variable_entry: a
 ! Variable attributes:
 !----------------------------------	
 long_name:   vertical coordinate formula term: a(k)
+units:        1
 !----------------------------------	
 !
 ! Additional variable information:
@@ -395,6 +439,7 @@ variable_entry: b
 ! Variable attributes:
 !----------------------------------	
 long_name:   vertical coordinate formula term: b(k)
+units:        1
 !----------------------------------	
 !
 ! Additional variable information:
@@ -413,6 +458,7 @@ variable_entry: a_bnds
 ! Variable attributes:
 !----------------------------------	
 long_name:   vertical coordinate formula term: a(k+1/2)
+units:        1
 !----------------------------------	
 !
 ! Additional variable information:
@@ -431,6 +477,7 @@ variable_entry: b_bnds
 ! Variable attributes:
 !----------------------------------	
 long_name:   vertical coordinate formula term: b(k+1/2)
+units:        1
 !----------------------------------	
 !
 ! Additional variable information:
@@ -487,86 +534,83 @@ units:           m
 !----------------------------------	
 !
 !
+! ------- Requested CCMI time variables
 !
-
+!
 !============
-variable_entry:    ta
+variable_entry: ccmi_year
 !============
-modeling_realm:    atmos
-!----------------------------------
+!------------
+!
 ! Variable attributes:
 !----------------------------------
-standard_name:     air_temperature
-units:             K
-cell_measures:     area: areacella
-long_name:         Air Temperature
-!----------------------------------
-! Additional variable information:
-!----------------------------------
-dimensions:        longitude latitude alevel time1
-out_name:          ta
-type:              real
+long_name:       CCMI Year
+comment:         These are what each model believes the date/time (Gregorian calendar) to be at the middle of each time interval in the output (GMT, not local time).
+units:           year
+dimensions:      time
+type:            integer
 !----------------------------------
 !
-
+!
 !============
-variable_entry:    ua
+variable_entry: ccmi_month
 !============
-modeling_realm:    atmos
-!----------------------------------
+!------------
+!
 ! Variable attributes:
 !----------------------------------
-standard_name:     eastward_wind
-units:             m s-1
-long_name:         Eastward Wind
-!----------------------------------
-! Additional variable information:
-!----------------------------------
-dimensions:        longitude latitude alevel time1
-out_name:          ua
-type:              real
+long_name:       CCMI Month
+comment:         These are what each model believes the date/time (Gregorian calendar) to be at the middle of each time interval in the output (GMT, not local time).
+units:           month
+dimensions:      time
+type:            integer
 !----------------------------------
 !
-
+!
 !============
-variable_entry:    va
+variable_entry: ccmi_day
 !============
-modeling_realm:    atmos
-!----------------------------------
+!------------
+!
 ! Variable attributes:
 !----------------------------------
-standard_name:     northward_wind
-units:             m s-1
-long_name:         Northward Wind
-!----------------------------------
-! Additional variable information:
-!----------------------------------
-dimensions:        longitude latitude alevel time1
-out_name:          va
-type:              real
+long_name:       CCMI Day
+comment:         These are what each model believes the date/time (Gregorian calendar) to be at the middle of each time interval in the output (GMT, not local time).
+units:           day
+dimensions:      time
+type:            integer
 !----------------------------------
 !
-
+!
 !============
-variable_entry:    hus
+variable_entry: ccmi_hour
 !============
-modeling_realm:    atmos
-!----------------------------------
+!------------
+!
 ! Variable attributes:
 !----------------------------------
-standard_name:     specific_humidity
-units:             1
-cell_measures:     area: areacella
-long_name:         Specific Humidity
-!----------------------------------
-! Additional variable information:
-!----------------------------------
-dimensions:        longitude latitude alevel time1
-out_name:          hus
-type:              real
+long_name:       CCMI Hour
+comment:         These are what each model believes the date/time (Gregorian calendar) to be at the middle of each time interval in the output (GMT, not local time).
+units:           hour
+dimensions:      time
+type:            integer
 !----------------------------------
 !
-
+!
+!============
+variable_entry: ccmi_minute
+!============
+!------------
+!
+! Variable attributes:
+!----------------------------------
+long_name:       CCMI Minute
+comment:         These are what each model believes the date/time (Gregorian calendar) to be at the middle of each time interval in the output (GMT, not local time).
+units:           minute
+dimensions:      time
+type:            integer
+!----------------------------------
+!
 !============
 variable_entry:    ps
 !============
@@ -578,13 +622,192 @@ standard_name:     surface_air_pressure
 units:             Pa
 cell_measures:     area: areacella
 long_name:         Surface Air Pressure
-comment:           surface pressure, not mean sea level pressure
+comment:           surface pressure (not mean sea-level pressure), 2-D field to calculate the 3-D pressure field from hybrid coordinates
 !----------------------------------
 ! Additional variable information:
 !----------------------------------
 dimensions:        longitude latitude time1
-out_name:          ps
 type:              real
+valid_min:         0
+valid_max:         1000000
+!----------------------------------
+!
+
+!============
+variable_entry:    sfvmro3
+!============
+modeling_realm:    atmos
+!----------------------------------
+! Variable attributes:
+!----------------------------------
+standard_name:     mole_fraction_of_ozone_in_air
+units:             mole mole-1
+cell_measures:     area: areacella
+long_name:         Ozone Volume Mixing Ratio in the Lowest Model Layer
+comment:           
+!----------------------------------
+! Additional variable information:
+!----------------------------------
+dimensions:        longitude latitude time1
+type:              real
+valid_min:         0
+valid_max:         1
+!----------------------------------
+!
+
+!============
+variable_entry:    sfvmrno2
+!============
+modeling_realm:    atmos
+!----------------------------------
+! Variable attributes:
+!----------------------------------
+standard_name:     mole_fraction_of_nitrogen_dioxide_in_air
+units:             mole mole-1
+cell_measures:     area: areacella
+long_name:         NO2 Volume Mixing Ratio in the Lowest Model Layer
+comment:           
+!----------------------------------
+! Additional variable information:
+!----------------------------------
+dimensions:        longitude latitude time1
+type:              real
+valid_min:         0
+valid_max:         1
+!----------------------------------
+!
+
+!============
+variable_entry:    sfvmrco
+!============
+modeling_realm:    atmos
+!----------------------------------
+! Variable attributes:
+!----------------------------------
+standard_name:     mole_fraction_of_carbon_monoxide_in_air
+units:             mole mole-1
+cell_measures:     area: areacella
+long_name:         CO Volume Mixing Ratio in the Lowest Model Layer
+comment:           
+!----------------------------------
+! Additional variable information:
+!----------------------------------
+dimensions:        longitude latitude time1
+type:              real
+valid_min:         0
+valid_max:         1
+!----------------------------------
+!
+
+!============
+variable_entry:    sfmmrpm2p5
+!============
+modeling_realm:    atmos
+!----------------------------------
+! Variable attributes:
+!----------------------------------
+standard_name:     mass_fraction_of_pm2p5_ambient_aerosol_in_air
+units:             kg kg-1
+cell_measures:     area: areacella
+long_name:         PM2.5 Mass Mixing Ratio in the Lowest Model Layer
+comment:           
+!----------------------------------
+! Additional variable information:
+!----------------------------------
+dimensions:        longitude latitude time1
+type:              real
+valid_min:         0
+valid_max:         1
+!----------------------------------
+!
+
+!============
+variable_entry:    dryo3
+!============
+modeling_realm:    atmos
+!----------------------------------
+! Variable attributes:
+!----------------------------------
+standard_name:     tendency_of_atmosphere_mass_content_of_ozone_due_to_dry_deposition
+units:             kg m-2 s-1
+cell_measures:     area: areacella
+long_name:         Dry Deposition Rate of O3
+comment:           Only for year 2006. dry deposition includes gravitational settling, impact scavenging, and turbulent deposition.
+!----------------------------------
+! Additional variable information:
+!----------------------------------
+dimensions:        longitude latitude time1
+type:              real
+positive:          down
+valid_min:         0
+valid_max:         1000000
+!----------------------------------
+!
+
+!============
+variable_entry:    gsto
+!============
+modeling_realm:    atmos
+!----------------------------------
+! Variable attributes:
+!----------------------------------
+!FAILS CF25 standard_name:     stomatal_conductance_of_water_vapour_per_unit_leaf_area
+units:             mmol m-2 s-1
+cell_measures:     area: areacella
+long_name:         Stomatal Conductance of Water Vapour
+comment:           Only for year 2006.  Full units are mmol H2O/m^2 leaf area/sec. 
+!----------------------------------
+! Additional variable information:
+!----------------------------------
+dimensions:        longitude latitude time1
+type:              real
+valid_min:         0
+valid_max:         1000000
+!----------------------------------
+!
+
+!============
+variable_entry:    stoo3
+!============
+modeling_realm:    atmos
+!----------------------------------
+! Variable attributes:
+!----------------------------------
+standard_name:     tendency_of_atmosphere_mass_content_of_ozone_due_to_dry_deposition_into_stomata
+units:             kg m-2 s-1
+cell_measures:     area: areacella
+long_name:         Dry Deposition Rate of O3 in Stomata
+comment:           Only for year 2006
+!----------------------------------
+! Additional variable information:
+!----------------------------------
+dimensions:        longitude latitude time1
+type:              real
+positive:          down
+valid_min:         0
+valid_max:         1000000
+!----------------------------------
+!
+
+!============
+variable_entry:    vmro3cnp
+!============
+modeling_realm:    atmos
+!----------------------------------
+! Variable attributes:
+!----------------------------------
+standard_name:     mole_fraction_of_ozone_in_air
+units:             mole mole-1
+cell_measures:     area: areacella
+long_name:         Ozone Volume Mixing Ratio at Canopy Height
+comment:           Only for year 2006
+!----------------------------------
+! Additional variable information:
+!----------------------------------
+dimensions:        longitude latitude time1
+type:              real
+valid_min:         0
+valid_max:         1
 !----------------------------------
 !
 

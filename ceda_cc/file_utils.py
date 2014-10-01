@@ -2,6 +2,8 @@
 # Standard library imports
 import string, pkgutil
 
+from xceptions import *
+
 # Third party imports
 
 #### netcdf --- currently support cdms2, python-netCDF4 and Scientific
@@ -9,9 +11,10 @@ import string, pkgutil
 l = pkgutil.iter_modules()
 ll = map( lambda x: x[1], l )
 
-supportedNetcdf = ['cdms2','netCDF4','Scientific']
+supportedNetcdf = ['cdms2','netCDF4','Scientific','ncq3']
 
 installedSupportedNetcdf = []
+##ll = []
 
 for x in supportedNetcdf:
   if x in ll:
@@ -19,7 +22,9 @@ for x in supportedNetcdf:
 
 if len(installedSupportedNetcdf) > 0:
   try: 
-    exec 'import %s' % installedSupportedNetcdf[0]
+    cmd = 'import %s' % installedSupportedNetcdf[0]
+    print '>>>>>>>>>', cmd
+    exec cmd
     ncLib = installedSupportedNetcdf[0]
   except:
     print 'Failed to install %s' % installedSupportedNetcdf[0]
@@ -27,23 +32,30 @@ if len(installedSupportedNetcdf) > 0:
 else:
   print """No supported netcdf module found.
          Supported modules are %s.
-         Execution my fail, depending on options chosen.
+         Attempting to run with experimental ncq3
+         Execution may fail, depending on options chosen.
          """ % str(supportedNetcdf)
-  ncLib = None
+  ncLib = 'ncq3'
 
 if ncLib == 'Scientific':
   from Scientific.IO import NetCDF as ncdf
 
 ## end of netcdf import.
 
-class fileMetadata:
+## utility function to convert "type" to string and standardise terminology
+def tstr( x ):
+  x1 = str(x)
+  return {'real':'float32', 'integer':'int32', 'float':'float32', 'double':'float64' }.get( x1, x1 )
 
-  def __init__(self,dummy=False,attributeMappingsLog=None):
+class fileMetadata(object):
+
+  def __init__(self,dummy=False,attributeMappingsLog=None,forceLib=None):
      
      self.dummy = dummy
      self.atMapLog = attributeMappingsLog
+     self.forceLib = forceLib
      if self.atMapLog == None:
-       self.atMapLog = open( '/tmp/cccc_atMapLog.txt', 'a' )
+       self.atMapLog = open( 'cccc_atMapLog.txt', 'a' )
 
   def close(self):
     self.atMapLog.close()
@@ -58,17 +70,70 @@ class fileMetadata:
     if self.dummy:
       self.makeDummyFileImage()
       return
-    if ncLib == 'cdms2':
+    if self.forceLib == 'ncq3':
+      import ncq3
+      self.ncq3 = ncq3
+      self.loadNc__ncq(fpath)
+    elif self.forceLib == 'cdms2':
+      import cdms2
+      self.cdms2 = cdms2
+      self.loadNc__Cdms(fpath)
+    elif self.forceLib == 'netCDF4':
+      import netCDF4
+      self.netCDF4 = netCDF4
+      self.loadNc__Netcdf4(fpath)
+    elif self.forceLib == 'Scientific':
+      import Scientific
+      from Scientific.IO import NetCDF as ncdf
+      self.ncdf = ncdf
+      self.loadNc__Scientific(fpath)
+    elif ncLib == 'cdms2':
+      import cdms2
+      self.cdms2 = cdms2
       self.loadNc__Cdms(fpath)
     elif ncLib == 'netCDF4':
+      import netCDF4
+      self.netCDF4 = netCDF4
       self.loadNc__Netcdf4(fpath)
     elif ncLib == 'Scientific':
+      from Scientific.IO import NetCDF as ncdf
+      self.ncdf = ncdf
       self.loadNc__Scientific(fpath)
     else:
-      raise 'No supported netcdf module assigned'
+      import ncq3
+      self.ncq3 = ncq3
+      self.loadNc__ncq(fpath)
+      ##raise baseException( 'No supported netcdf module assigned' )
 
+  def loadNc__ncq(self,fpath):
+    self.nc0 = self.ncq3.open( fpath )
+    self.nc0.getDigest()
+    self.ncq3.close( self.nc0 )
+    self.nc = self.ncq3.Browse( self.nc0.digest )
+    for a in self.nc._gal:
+       self.ga[a.name] = a.value
+    for v in self.nc._vdict.keys():
+      thisv = self.nc._vdict[v][0]
+      if v not in self.nc._ddict.keys():
+        self.va[v] = {}
+        for a in self.nc._ll[thisv.id]:
+          self.va[v][a.name] = a.value
+        self.va[v]['_type'] = tstr( thisv.type )
+        if v in ['plev','plev_bnds','height']:
+          x = thisv.data
+          if type(x) != type([]):
+            x = [x]
+          self.va[v]['_data'] = x
+      else:
+        self.da[v] = {}
+        thisa = self.nc._ddict[v]
+        for a in self.nc._ll[thisv.id]:
+          self.da[v][a.name] = a.value
+        self.da[v]['_type'] = tstr( thisv.type )
+        self.da[v]['_data'] = thisv.data
+    
   def loadNc__Cdms(self,fpath):
-    self.nc = cdms2.open( fpath )
+    self.nc = self.cdms2.open( fpath )
     for k in self.nc.attributes.keys():
       self.ga[k] = self.nc.attributes[k]
       if len( self.ga[k] ) == 1:
@@ -81,7 +146,7 @@ class fileMetadata:
         if type(x) == type([]) and len(x) == 1:
           x = x[0]
         self.va[v][k] = x
-      self.va[v]['_type'] = str( self.nc.variables[v].dtype )
+      self.va[v]['_type'] = tstr( self.nc.variables[v].dtype )
       if v in ['plev','plev_bnds','height']:
         x = self.nc.variables[v].getValue().tolist()
         if type(x) != type([]):
@@ -93,7 +158,7 @@ class fileMetadata:
       self.da[v] = {}
       for k in self.nc.axes[v].attributes.keys():
         self.da[v][k] = self.nc.axes[v].attributes[k]
-      self.da[v]['_type'] = str( self.nc.axes[v].getValue().dtype )
+      self.da[v]['_type'] = tstr( self.nc.axes[v].getValue().dtype )
       self.da[v]['_data'] = self.nc.axes[v].getValue().tolist()
       
     self.nc.close()
@@ -107,17 +172,17 @@ class fileMetadata:
 ### for scalar variables, <variable>.getValue().tolist() returns a scalar.
 ###
   def loadNc__Scientific(self,fpath):
-    self.nc = ncdf.NetCDFFile( fpath, 'r' )
+    self.nc = self.ncdf.NetCDFFile( fpath, 'r' )
     for k in self.nc.__dict__.keys():
       self.ga[k] = self.nc.__dict__[k]
-      ##if len( self.ga[k] ) == 1:
-        ##self.ga[k] = self.ga[k][0]
+      if type(self.ga[k]) not in [type('x'),type(1),type(1.)] and len(self.ga[k]) == 1:
+        self.ga[k] = self.ga[k][0]
     for v in self.nc.variables.keys():
       if v not in self.nc.dimensions.keys():
         self.va[v] = {}
         for k in self.nc.variables[v].__dict__.keys():
           self.va[v][k] = self.nc.variables[v].__dict__[k]
-        self.va[v]['_type'] = str( self.nc.variables[v].getValue().dtype )
+        self.va[v]['_type'] = tstr( self.nc.variables[v].getValue().dtype )
         if v in ['plev','plev_bnds','height']:
         ### Note: returns a scalar if data has a scalar value.
           x = self.nc.variables[v].getValue().tolist()
@@ -130,7 +195,7 @@ class fileMetadata:
       if v in self.nc.variables.keys():
         for k in self.nc.variables[v].__dict__.keys():
           self.da[v][k] = self.nc.variables[v].__dict__[k]
-        self.da[v]['_type'] = str( self.nc.variables[v].getValue().dtype )
+        self.da[v]['_type'] = tstr( self.nc.variables[v].getValue().dtype )
         self.da[v]['_data'] = self.nc.variables[v].getValue().tolist()
       else:
         self.da[v]['_type'] = 'index (no data variable)'
@@ -138,20 +203,21 @@ class fileMetadata:
     self.nc.close()
 
   def loadNc__Netcdf4(self,fpath):
-    self.nc = netCDF4.Dataset(fpath, 'r')
+    self.nc = self.netCDF4.Dataset(fpath, 'r')
     for k in self.nc.ncattrs():
       self.ga[k] = self.nc.getncattr(k)
-      if len( self.ga[k] ) == 1:
-        self.ga[k] = self.ga[k][0]
+      if type( self.ga[k] ) in [ type([]),type(()) ]:
+        if len( self.ga[k] ) == 1:
+          self.ga[k] = self.ga[k][0]
     for v in self.nc.variables.keys():
       if v not in self.nc.dimensions.keys():
         self.va[v] = {}
         for k in self.nc.variables[v].ncattrs():
           self.va[v][k] = self.nc.variables[v].getncattr(k)
         try:
-          self.va[v]['_type'] = str( self.nc.variables[v].dtype )
+          self.va[v]['_type'] = tstr( self.nc.variables[v].dtype )
         except:
-          self.va[v]['_type'] = str( self.nc.variables[v].datatype )
+          self.va[v]['_type'] = tstr( self.nc.variables[v].datatype )
         if v in ['plev','plev_bnds','height']:
           self.va[v]['_data'] = self.nc.variables[v][:].tolist()
 
@@ -161,9 +227,9 @@ class fileMetadata:
         for k in self.nc.variables[v].ncattrs():
           self.da[v][k] = self.nc.variables[v].getncattr(k)
         try:
-          self.da[v]['_type'] = str( self.nc.variables[v].dtype )
+          self.da[v]['_type'] = tstr( self.nc.variables[v].dtype )
         except:
-          self.da[v]['_type'] = str( self.nc.variables[v].datatype )
+          self.da[v]['_type'] = tstr( self.nc.variables[v].datatype )
 
         self.da[v]['_data'] = self.nc.variables[v][:].tolist()
       else:
