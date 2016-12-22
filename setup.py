@@ -17,7 +17,7 @@ long_description = '\n\n' + open(readme_txt).read()
 
 setup(name='ceda-cc',
       version=version,
-      description="CEDA Conformance Checker",
+      description="CEDA Compliance Checker",
       long_description=long_description,
       classifiers=[
         'Development Status :: 5 - Production/Stable',
@@ -28,7 +28,7 @@ setup(name='ceda-cc',
       keywords='',
       author='Martin Juckes',
       author_email='Martin.Juckes@stfc.ac.uk',
-      url='http://proj.badc.rl.ac.uk/exarch/wiki/PackageCedaccInstall',
+      url='https://github.com/cp4cds/ceda-cc/wiki',
       #download_url=''
       license='BSD',
       packages=find_packages(),
