@@ -43,3 +43,11 @@ Updated remote settings in git config file: `.git/config`:
 Update `setup.py` to point to new GitHub location:
 
  https://github.com/cp4cds/ceda-cc
+
+Push to master:
+
+```
+git push -u origin master
+git push
+```
+
