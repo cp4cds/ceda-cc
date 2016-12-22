@@ -49,5 +49,7 @@ Push to master:
 ```
 git push -u origin master
 git push
+git push origin --all  # to push branches
+git push origin --tags # to push tags
 ```
 
